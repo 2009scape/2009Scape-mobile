@@ -250,7 +250,7 @@ public class JavaGUILauncherActivity extends  BaseActivity implements View.OnTou
                 return true;
             });
 
-            final File miniclient = new File(Tools.DIR_DATA, "miniclient.jar");
+            final File miniclient = new File(Tools.DIR_DATA, "rt4.jar");
             final File config = new File(Tools.DIR_DATA, "config.json");
             final String javaArgs = getIntent().getExtras().getString("javaArgs");
 
@@ -301,6 +301,7 @@ public class JavaGUILauncherActivity extends  BaseActivity implements View.OnTou
                     System.out.println("Time:" + time + " Last " + lastPress);
                     break;
                 case R.id.camera:
+                    System.out.println("Hello from the App Camera Button");
                     if(!mouseState){ // Camera Mode On
                         AWTInputBridge.sendKey((char)AWTInputEvent.VK_F9,(char)AWTInputEvent.VK_F9); // Send F9
                         v.setBackground(getResources().getDrawable( R.drawable.control_button_pressed ));
@@ -382,10 +383,12 @@ public class JavaGUILauncherActivity extends  BaseActivity implements View.OnTou
             } else {
                 javaArgList.add("-Dusername=" + preferences.getString("username",""));
                 javaArgList.add("-Dpassword=" + preferences.getString("password",""));
+                javaArgList.add("-DpluginDir="+Tools.DIR_DATA + "/plugins/");
+                javaArgList.add("-DclientHomeOverride="+Tools.DIR_DATA+"/");
                 javaArgList.add("-jar");
                 javaArgList.add(miniclient.getAbsolutePath());
                 javaArgList.add(config.getAbsolutePath()); // Pass client config as arg0
-                javaArgList.add(Tools.DIR_DATA + "/plugins/"); // Pass plugins directory as arg1
+                javaArgList.add(Tools.DIR_DATA + "/plugins/");
             }
 
             Logger.getInstance().appendToLog("Info: Java arguments: " + Arrays.toString(javaArgList.toArray(new String[0])));

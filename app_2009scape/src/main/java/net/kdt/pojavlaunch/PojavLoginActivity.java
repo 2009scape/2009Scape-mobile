@@ -139,7 +139,7 @@ public class PojavLoginActivity extends BaseActivity {
     }
     private void uiInit() {
         setContentView(R.layout.launcher_main_v4);
-        final File miniclient = new File(Tools.DIR_DATA, "miniclient.jar");
+        final File miniclient = new File(Tools.DIR_DATA, "rt4.jar");
         Thread t = new Thread(()->{
             PojavLoginActivity.this.runOnUiThread(() -> {
                 Intent intent = new Intent(PojavLoginActivity.this, JavaGUILauncherActivity.class);
@@ -237,8 +237,9 @@ public class PojavLoginActivity extends BaseActivity {
                 MultiRTUtils.postPrepare(PojavLoginActivity.this,"Internal");
 
 
-                Tools.copyAssetFile(this,"rt4.jar",Tools.DIR_DATA,"miniclient.jar", true);
+                Tools.copyAssetFile(this,"rt4.jar",Tools.DIR_DATA,"rt4.jar", true);
                 Tools.copyAssetFile(this,"config.json",Tools.DIR_DATA, true);
+
 
                 // MobileClientBindings
                 Tools.copyAssetFile(this, "MobileClientBindings.zip",Tools.DIR_DATA, true);
@@ -246,8 +247,8 @@ public class PojavLoginActivity extends BaseActivity {
                         new File(Tools.DIR_DATA + "/plugins/"));
 
                 // GroundItemsOverlay
-                Tools.copyAssetFile(this, "GroundItemsOverlay.zip",Tools.DIR_DATA, true);
-                Tools.ZipTool.unzip(new File(Tools.DIR_DATA+ "/GroundItemsOverlay.zip"),
+                Tools.copyAssetFile(this, "GroundItems.zip",Tools.DIR_DATA, true);
+                Tools.ZipTool.unzip(new File(Tools.DIR_DATA+ "/GroundItems.zip"),
                         new File(Tools.DIR_DATA + "/plugins/"));
 
                 // LoginTimer
