@@ -148,7 +148,7 @@ public class SettingsActivity extends Activity {
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
                 editor.putInt("mousespeed",mouseSpeed.getProgress());
                 editor.commit();
-                LauncherPreferences.PREF_MOUSESPEED = mouseSpeed.getProgress();
+                LauncherPreferences.PREF_MOUSESPEED = mouseSpeed.getProgress()/1.5f;
             }
 
             @Override

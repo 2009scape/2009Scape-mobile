@@ -2,9 +2,12 @@ package net.kdt.pojavlaunch;
 
 import android.content.*;
 import android.graphics.*;
+import android.os.Build;
 import android.text.*;
 import android.util.*;
 import android.view.*;
+
+import androidx.annotation.RequiresApi;
 
 import java.util.*;
 import net.kdt.pojavlaunch.utils.*;
@@ -13,36 +16,22 @@ import org.lwjgl.glfw.*;
 public class AWTCanvasView extends TextureView implements TextureView.SurfaceTextureListener, Runnable {
     private float mScaleFactor;
     private float[] mScales;
-    public int offsetX = 0;
-    public int offsetY = 0;
-    private float[] stretchOffsets;
-    private float[] stretchScales;
-    private boolean streched = false;
-
-    private int mWidth, mHeight;
     private boolean mIsDestroyed = false;
     
-    private TextPaint fpsPaint;
+    private final TextPaint fpsPaint;
     private boolean attached = false;
 
     // Temporary count fps https://stackoverflow.com/a/13729241
-    private LinkedList<Long> times = new LinkedList<Long>(){{add(System.nanoTime());}};
-    private final int MAX_SIZE = 100;
-    private final double NANOS = 1000000000.0;
-
-    public int getmWidth(){
-        return mWidth;
-    }
-    public int getmHeight(){
-        return mHeight;
-    }
+    private final LinkedList<Long> times = new LinkedList<Long>(){{add(System.nanoTime());}};
 
     /** Calculates and returns frames per second */
     private double fps() {
         long lastTime = System.nanoTime();
+        final double NANOS = 1000000000.0;
         double difference = (lastTime - times.getFirst()) / NANOS;
         times.addLast(lastTime);
         int size = times.size();
+        int MAX_SIZE = 100;
         if (size > MAX_SIZE) {
             times.removeFirst();
         }
@@ -64,10 +53,10 @@ public class AWTCanvasView extends TextureView implements TextureView.SurfaceTex
 
         float[] scales = new float[2]; //Left, Top
 
-        scales[0] = (CallbackBridge.physicalWidth/2);
+        scales[0] = (CallbackBridge.physicalWidth/2f);
         scales[0] -= scales[0]/mScaleFactor;
 
-        scales[1] = (CallbackBridge.physicalHeight/2);
+        scales[1] = (CallbackBridge.physicalHeight/2f);
         scales[1] -= scales[1]/mScaleFactor;
 
         mScales = scales;
@@ -79,20 +68,15 @@ public class AWTCanvasView extends TextureView implements TextureView.SurfaceTex
     
     public AWTCanvasView(Context ctx, AttributeSet attrs) {
         super(ctx, attrs);
-        // setWillNotDraw(false);
-        
         fpsPaint = new TextPaint();
         fpsPaint.setColor(Color.WHITE);
         fpsPaint.setTextSize(20);
-        
         setSurfaceTextureListener(this);
         initScaleFactors();
     }
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture texture, int w, int h) {
-        mWidth = w;
-        mHeight = h;
         mIsDestroyed = false;
         new Thread(this, "AndroidAWTRenderer").start();
     }
@@ -105,47 +89,47 @@ public class AWTCanvasView extends TextureView implements TextureView.SurfaceTex
 
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture texture, int w, int h) {
-        mWidth = w;
-        mHeight = h;
     }
 
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture texture) {
     }
-    
-    private boolean mDrawing;
-    private Surface mSurface;
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void run() {
         Canvas canvas;
-        mSurface = new Surface(getSurfaceTexture());
-
+        final Surface mSurface = new Surface(getSurfaceTexture());
+        Paint p = new Paint();
+        p.setAntiAlias(false);
+        p.setDither(false);
+        p.setFilterBitmap(false);
+        int width = CallbackBridge.physicalWidth;
+        int height = CallbackBridge.physicalHeight;
+        int[] rgbArray;
+        Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         try {
-            while (!mIsDestroyed && mSurface.isValid()) {
-                canvas = mSurface.lockCanvas(null);
-                canvas.drawRGB(0, 0, 0);
-
+            while (!mIsDestroyed) {
                 if (!attached) {
                     attached = CallbackBridge.nativeAttachThreadToOther(true, BaseMainActivity.isInputStackCall);
                 } else {
-                    int[] rgbArray = JREUtils.renderAWTScreenFrame(/* canvas, mWidth, mHeight */);
-                    mDrawing = rgbArray != null;
+                    canvas = mSurface.lockHardwareCanvas();
+                    //canvas = mSurface.lockCanvas(null);
+                    canvas.drawRGB(0, 0, 0);
+                    rgbArray = JREUtils.renderAWTScreenFrame(/* canvas, mWidth, mHeight */);
                     if (rgbArray != null) {
                         canvas.save();
-                        if(streched){
-                            canvas.scale(mScaleFactor*1.17F, mScaleFactor);
-                            canvas.translate(-mScales[0]*1.115F,-mScales[1]);
-                        } else {
-                            canvas.scale(mScaleFactor, mScaleFactor);
-                            canvas.translate(-mScales[0],-mScales[1]);
-                        }
-                        canvas.drawBitmap(rgbArray, 0, CallbackBridge.physicalWidth, offsetX, offsetY, CallbackBridge.physicalWidth, CallbackBridge.physicalHeight, true, null);
+                        canvas.scale(mScaleFactor, mScaleFactor);
+                        canvas.translate(-mScales[0],-mScales[1]);
+                        b.setPixels(rgbArray,0,width,0,0,width,height);
+                        canvas.drawBitmap(b,0,0,p);
                         canvas.restore();
+                        canvas.drawText("FPS: " + (Math.round(fps() * 10) / 10) + ", attached=" + attached + ", HWA: "+ canvas.isHardwareAccelerated(), 50, 50, fpsPaint);
                     }
+                    mSurface.unlockCanvasAndPost(canvas);
                 }
-                canvas.drawText("FPS: " + (Math.round(fps() * 10) / 10) + ", attached=" + attached + ", drawing=" + mDrawing, 50, 50, fpsPaint);
-                mSurface.unlockCanvasAndPost(canvas);
             }
+            mSurface.release();
         } catch (Throwable th) {
             Tools.showError(getContext(), th);
         }

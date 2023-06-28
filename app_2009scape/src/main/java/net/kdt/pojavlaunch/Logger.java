@@ -58,7 +58,7 @@ public class Logger {
 
     /** Print the text to the log file, no china censoring there */
     public void appendToLogUnchecked(String text){
-        if(text.contains("AMESSAGE")){
+        if(text.contains("AMESSAGE22")){
             JMessageHandler.handleMessage(text);
         }
         logStream.println(text);

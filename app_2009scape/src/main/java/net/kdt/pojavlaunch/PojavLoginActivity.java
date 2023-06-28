@@ -139,7 +139,7 @@ public class PojavLoginActivity extends BaseActivity {
     }
     private void uiInit() {
         setContentView(R.layout.launcher_main_v4);
-        final File miniclient = new File(Tools.DIR_DATA, "miniclient.jar");
+        final File miniclient = new File(Tools.DIR_DATA, "rt4.jar");
         Thread t = new Thread(()->{
             PojavLoginActivity.this.runOnUiThread(() -> {
                 Intent intent = new Intent(PojavLoginActivity.this, JavaGUILauncherActivity.class);
@@ -197,6 +197,7 @@ public class PojavLoginActivity extends BaseActivity {
         mkdirs(Tools.DIR_GAME_HOME + "/config");
         mkdirs(Tools.DIR_DATA + "/music");
         mkdirs(Tools.DIR_DATA + "/effects");
+        mkdirs(Tools.DIR_DATA + "/plugins");
         mkdirs(Tools.CTRLMAP_PATH);
         try {
             Tools.copyAssetFile(this, "components/security/pro-grade.jar", Tools.DIR_DATA, true);
@@ -236,9 +237,41 @@ public class PojavLoginActivity extends BaseActivity {
                 MultiRTUtils.postPrepare(PojavLoginActivity.this,"Internal");
 
 
-                Tools.copyAssetFile(this,"miniclient.jar",Tools.DIR_DATA, true);
+                Tools.copyAssetFile(this,"rt4.jar",Tools.DIR_DATA,"rt4.jar", true);
                 Tools.copyAssetFile(this,"config.json",Tools.DIR_DATA, true);
 
+
+                // MobileClientBindings
+                Tools.copyAssetFile(this, "MobileClientBindings.zip",Tools.DIR_DATA, true);
+                Tools.ZipTool.unzip(new File(Tools.DIR_DATA+ "/MobileClientBindings.zip"),
+                        new File(Tools.DIR_DATA + "/plugins/"));
+
+                // GroundItemsOverlay
+                Tools.copyAssetFile(this, "GroundItems.zip",Tools.DIR_DATA, true);
+                Tools.ZipTool.unzip(new File(Tools.DIR_DATA+ "/GroundItems.zip"),
+                        new File(Tools.DIR_DATA + "/plugins/"));
+
+                // LoginTimer
+                Tools.copyAssetFile(this, "LoginTimer.zip",Tools.DIR_DATA, true);
+                Tools.ZipTool.unzip(new File(Tools.DIR_DATA+ "/LoginTimer.zip"),
+                        new File(Tools.DIR_DATA + "/plugins/"));
+
+                // RememberMyLogin
+                Tools.copyAssetFile(this, "RememberMyLogin.zip",Tools.DIR_DATA, true);
+                Tools.ZipTool.unzip(new File(Tools.DIR_DATA+ "/RememberMyLogin.zip"),
+                        new File(Tools.DIR_DATA + "/plugins/"));
+
+                // SlayerTrackerPlugin
+                Tools.copyAssetFile(this, "SlayerTrackerPlugin.zip",Tools.DIR_DATA, true);
+                Tools.ZipTool.unzip(new File(Tools.DIR_DATA+ "/SlayerTrackerPlugin.zip"),
+                        new File(Tools.DIR_DATA + "/plugins/"));
+
+                // XPDropPlugin
+                Tools.copyAssetFile(this, "XPDropPlugin.zip",Tools.DIR_DATA, true);
+                Tools.ZipTool.unzip(new File(Tools.DIR_DATA+ "/XPDropPlugin.zip"),
+                        new File(Tools.DIR_DATA + "/plugins/"));
+
+                /*
                 // Extract predumped sounds
                 try{
                     // Unpack Music
@@ -259,6 +292,7 @@ public class PojavLoginActivity extends BaseActivity {
                 catch (Exception e){
                     System.out.println("Error Unpacking Music.");
                 }
+                 */
                 return true;
             }catch (IOException e) {
                 Log.e("JREAuto", "Internal JRE unpack failed", e);
