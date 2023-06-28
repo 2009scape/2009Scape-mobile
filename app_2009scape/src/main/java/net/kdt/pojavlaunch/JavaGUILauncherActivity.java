@@ -301,7 +301,6 @@ public class JavaGUILauncherActivity extends  BaseActivity implements View.OnTou
                     System.out.println("Time:" + time + " Last " + lastPress);
                     break;
                 case R.id.camera:
-                    System.out.println("Hello from the App Camera Button");
                     if(!mouseState){ // Camera Mode On
                         AWTInputBridge.sendKey((char)AWTInputEvent.VK_F9,(char)AWTInputEvent.VK_F9); // Send F9
                         v.setBackground(getResources().getDrawable( R.drawable.control_button_pressed ));
