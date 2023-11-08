@@ -3,6 +3,8 @@ package net.kdt.pojavlaunch;
 import static net.kdt.pojavlaunch.MainActivity.fullyExit;
 import static net.kdt.pojavlaunch.Tools.currentDisplayMetrics;
 
+import static java.security.AccessController.getContext;
+
 import android.annotation.SuppressLint;
 import android.content.ClipboardManager;
 import android.graphics.Color;
@@ -46,9 +48,13 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
     private TouchCharInput mTouchCharInput;
 
     private LinearLayout mTouchPad;
+    boolean isDragClicking = false;
     private ImageView mMousePointerImageView;
     private GestureDetector mGestureDetector;
+
+    private GestureDetector longPressDetector;
     private boolean cameraMode = false;
+    float prevX = 0, prevY = 0;
     private long lastPress = 0;
     private ScaleGestureDetector scaleGestureDetector;
     private boolean rcState = false;
@@ -96,7 +102,6 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
         });
 
         mTouchPad.setOnTouchListener(new View.OnTouchListener() {
-            float prevX = 0, prevY = 0;
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 // MotionEvent reports input details from the touch screen
@@ -137,6 +142,7 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
                         }
                     }
                 }
+                longPressDetector.onTouchEvent(event);
 
                 prevY = y;
                 prevX = x;
@@ -146,6 +152,7 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
 
         mTextureView.setOnTouchListener((v, event) -> {
             scaleGestureDetector.onTouchEvent(event);
+            longPressDetector.onTouchEvent(event);
             float x = event.getX();
             float y = event.getY();
             if (mGestureDetector.onTouchEvent(event)) {
@@ -164,9 +171,38 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
                     break;
                 case MotionEvent.ACTION_MOVE: // 2
                     sendScaledMousePosition(x + mTextureView.getX(), y);
+                    try {
+                        panCamera(prevX-x, prevY-y);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                     break;
             }
+
+            prevY = y;
+            prevX = x;
             return true;
+        });
+
+        longPressDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public void onLongPress(MotionEvent e) {
+                super.onLongPress(e);
+                Log.i("downthecrop","Hi from a long press!");
+                if(!isDragClicking) {
+                    isDragClicking = true;
+                    //AWTInputBridge.sendKey((char) AWTInputEvent.VK_F5, AWTInputEvent.VK_F5);
+                }
+            }
+
+            @Override
+            public boolean onSingleTapUp(MotionEvent e) {
+                if(isDragClicking) {
+                    isDragClicking = false;
+                    //AWTInputBridge.sendKey((char)AWTInputEvent.VK_F5, AWTInputEvent.VK_F5);
+                }
+                return super.onSingleTapUp(e);
+            }
         });
 
         try {
@@ -202,6 +238,28 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
             }, "Installer").start();
         } catch (Throwable th) {
             Tools.showError(this, th, true);
+        }
+    }
+
+    private void panCamera(float dx, float dy) throws InterruptedException {
+        //Log.i("downthecrop-pan","dx: " +dx + " dy: " + dy);
+        final float threshold = 8.0f; // adjust this value as needed to control the sensitivity of the panning
+
+        // Check horizontal panning
+        if(dx > threshold) {
+            // Finger moved to the right, pan camera to the right
+            AWTInputBridge.sendKey((char)AWTInputEvent.VK_RIGHT, AWTInputEvent.VK_RIGHT);
+        } else if(dx < -threshold) {
+            AWTInputBridge.sendKey((char)AWTInputEvent.VK_LEFT, AWTInputEvent.VK_LEFT);
+        }
+
+        // Check vertical panning
+        if(dy > threshold) {
+            // Finger moved down, pan camera up
+            AWTInputBridge.sendKey((char)AWTInputEvent.VK_UP, AWTInputEvent.VK_UP);
+        } else if(dy < -threshold) {
+            // Finger moved up, pan camera down
+            AWTInputBridge.sendKey((char)AWTInputEvent.VK_DOWN, AWTInputEvent.VK_DOWN);
         }
     }
 
