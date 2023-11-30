@@ -220,29 +220,13 @@ public class GLFWGLSurface extends View implements GrabListener {
                 public void onSurfaceTextureUpdated(@NonNull SurfaceTexture surface) {}
             });
 
-            this.longPressDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
-
-                boolean isDragClicking = false;
+            longPressDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
                 @Override
                 public void onLongPress(MotionEvent e) {
                     super.onLongPress(e);
-                    if(!isDragClicking) {
-                        isDragClicking = true;
-                        AWTInputBridge.sendKey((char) AWTInputEvent.VK_F5, AWTInputEvent.VK_F5);
-                    }
-                }
-
-                @Override
-                public boolean onSingleTapUp(MotionEvent e) {
-                    if(isDragClicking) {
-                        isDragClicking = false;
-                        AWTInputBridge.sendKey((char)AWTInputEvent.VK_F5, AWTInputEvent.VK_F5);
-                    }
-                    return super.onSingleTapUp(e);
+                    CallbackBridge.putMouseEventWithCoords(LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_RIGHT, CallbackBridge.mouseX, CallbackBridge.mouseY);
                 }
             });
-
-            //this.longPressDetector.setIsLongpressEnabled(true);
 
             ((ViewGroup)getParent()).addView(textureView);
         }
@@ -257,7 +241,7 @@ public class GLFWGLSurface extends View implements GrabListener {
     @SuppressWarnings("accessibility")
     public boolean onTouchEvent(MotionEvent e) {
         scaleGestureDetector.onTouchEvent(e);
-        //longPressDetector.onTouchEvent(e);
+        longPressDetector.onTouchEvent(e);
         // Kinda need to send this back to the layout
         if(((ControlLayout)getParent()).getModifiable()) return false;
 
@@ -280,7 +264,6 @@ public class GLFWGLSurface extends View implements GrabListener {
             CallbackBridge.mouseY = (e.getY() * mScaleFactor);
             //One android click = one MC click
             if(mSingleTapDetector.onTouchEvent(e)){ //
-                //longPressDetector.onTouchEvent(e);// Touch Mode
                 CallbackBridge.putMouseEventWithCoords(LwjglGlfwKeycode.GLFW_MOUSE_BUTTON_LEFT, CallbackBridge.mouseX, CallbackBridge.mouseY);
                 return true;
             }
@@ -429,6 +412,7 @@ public class GLFWGLSurface extends View implements GrabListener {
 
         // Actualise the pointer count
         mLastPointerCount = e.getPointerCount();
+        longPressDetector.onTouchEvent(e);
 
         return true;
     }

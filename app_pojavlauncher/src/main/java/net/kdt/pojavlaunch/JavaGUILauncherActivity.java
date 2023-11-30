@@ -48,7 +48,6 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
     private TouchCharInput mTouchCharInput;
 
     private LinearLayout mTouchPad;
-    boolean isDragClicking = false;
     private ImageView mMousePointerImageView;
     private GestureDetector mGestureDetector;
 
@@ -187,20 +186,14 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
         longPressDetector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
             @Override
             public void onLongPress(MotionEvent e) {
+                // Send RightClick
+                AWTInputBridge.sendKey((char)AWTInputEvent.VK_F11,AWTInputEvent.VK_F11);
+                AWTInputBridge.sendMousePress(AWTInputEvent.BUTTON1_DOWN_MASK);
                 super.onLongPress(e);
-                Log.i("downthecrop","Hi from a long press!");
-                if(!isDragClicking) {
-                    isDragClicking = true;
-                    //AWTInputBridge.sendKey((char) AWTInputEvent.VK_F5, AWTInputEvent.VK_F5);
-                }
             }
 
             @Override
             public boolean onSingleTapUp(MotionEvent e) {
-                if(isDragClicking) {
-                    isDragClicking = false;
-                    //AWTInputBridge.sendKey((char)AWTInputEvent.VK_F5, AWTInputEvent.VK_F5);
-                }
                 return super.onSingleTapUp(e);
             }
         });
