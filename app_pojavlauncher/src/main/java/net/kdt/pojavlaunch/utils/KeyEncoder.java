@@ -23,9 +23,7 @@ public class KeyEncoder {
 
     public static void sendEncodedChar(int keyCode, char iC){
         System.out.println(keyCode);
-        if(keyCode == 75)
-            AWTInputBridge.sendKey((char)222,222);
-        else if(keyCode == backspaceAndroid){
+        if(keyCode == backspaceAndroid){
             AWTInputBridge.sendKey(backspaceUnicode,backspaceUnicode);
         } else if(specialChars.contains(""+iC)){
             // Send special character to client
