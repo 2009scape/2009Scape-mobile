@@ -141,7 +141,6 @@ public class JavaGUILauncherActivity extends BaseActivity implements View.OnTouc
                         }
                     }
                 }
-                longPressDetector.onTouchEvent(event);
 
                 prevY = y;
                 prevX = x;
