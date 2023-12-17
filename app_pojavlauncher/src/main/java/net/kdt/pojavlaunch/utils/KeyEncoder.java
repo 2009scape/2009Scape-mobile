@@ -47,6 +47,7 @@ public class KeyEncoder {
         if (keyCode == BACKSPACE_ANDROID && !TouchCharInput.softKeyboardIsActive) {
             sendUnicodeBackspace();
         } else if (specialCharMap.containsKey(c)) {
+            AWTInputBridge.sendKey(MODIFIER, MODIFIER);
             AWTInputBridge.sendKey(specialCharMap.get(c), specialCharMap.get(c));
         } else if (Character.isDigit(c)) {
             AWTInputBridge.sendKey(c, c);
