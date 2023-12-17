@@ -1,110 +1,62 @@
 package net.kdt.pojavlaunch.utils;
 
 import net.kdt.pojavlaunch.AWTInputBridge;
+import net.kdt.pojavlaunch.customcontrols.keyboard.TouchCharInput;
 
-/*
-    About Key Events. Because the Android Spec doesn't require
-    soft keyboards to dispatch key events not all keyboard implementations
-    across Android will trigger these actions.
-
-    Currently we use the following function to translate keycodes for
-    special character, capital letters, and digits.
-
-    keycode 123 (F12) is used as a single digit capslock button which
-    when sent to the miniclient before a char will act accordingly.
- */
+import java.util.HashMap;
+import java.util.Map;
 
 public class KeyEncoder {
 
-    static String specialChars = "/*!@#$%^&*()\"{}_[+:;=-_]'|\\?/<>,.";
-    static char modifier = 123;
-    static char backspaceAndroid = 67;
-    public static char backspaceUnicode = 8;
+    private static final Map<Character, Character> specialCharMap = createSpecialCharMap();
+    private static final char MODIFIER = 123; // F12 key as a modifier for caps lock
+    private static final char BACKSPACE_ANDROID = 67;
+    private static final char BACKSPACE_UNICODE = 8;
 
-    public static void sendEncodedChar(int keyCode, char iC){
-        System.out.println(keyCode);
-        if(keyCode == backspaceAndroid){
-            AWTInputBridge.sendKey(backspaceUnicode,backspaceUnicode);
-        } else if(specialChars.contains(""+iC)){
-            // Send special character to client
-            char c = iC;
-            switch(c){
-                case '!':
-                    c = '1';
-                    break;
-                case '@':
-                    c = '2';
-                    break;
-                case '#':
-                    c = '3';
-                    break;
-                case '$':
-                    c = '4';
-                    break;
-                case '%':
-                    c = '5';
-                    break;
-                case '^':
-                    c = '6';
-                    break;
-                case '&':
-                    c = '7';
-                    break;
-                case '*':
-                    c = '8';
-                    break;
-                case '(':
-                    c = '9';
-                    break;
-                case ')':
-                    c = '0';
-                    break;
-                case '_':
-                    c = '-';
-                    break;
-                case '+':
-                    c = '=';
-                    break;
-                case '{':
-                    c = '[';
-                    break;
-                case '}':
-                    c = ']';
-                    break;
-                case ':':
-                    c = ';';
-                    break;
-                case '"':
-                    c = '\'';
-                    break;
-                case '<':
-                    c = ',';
-                    break;
-                case '>':
-                    c = '.';
-                    break;
-                case '?':
-                    c = '/';
-                    break;
-                case '|':
-                    c = '\\';
-                    break;
-            }
-            if(c != iC){
-                AWTInputBridge.sendKey(modifier,modifier);
-            }
-            AWTInputBridge.sendKey(c,c);
-        } else if(Character.isDigit(iC)){
-            AWTInputBridge.sendKey(iC,iC);
-        } else if (iC == Character.toUpperCase(iC)){
-            // We send F12 as a modifier to avoid needing to worry about shift.
-            // Client takes this modifier and does a toUpperCase().
-            AWTInputBridge.sendKey(modifier,modifier);
-            AWTInputBridge.sendKey(Character.toUpperCase(iC),Character.toUpperCase(iC));
-        } else if(iC == Character.toLowerCase(iC)){
-            AWTInputBridge.sendKey(Character.toUpperCase(iC),Character.toUpperCase(iC));
+    // Initialize the mapping of special characters to their respective keys
+    private static Map<Character, Character> createSpecialCharMap() {
+        Map<Character, Character> map = new HashMap<>();
+        map.put('!', '1');
+        map.put('@', '2');
+        map.put('#', '3');
+        map.put('$', '4');
+        map.put('%', '5');
+        map.put('^', '6');
+        map.put('&', '7');
+        map.put('*', '8');
+        map.put('(', '9');
+        map.put(')', '0');
+        map.put('_', '-');
+        map.put('+', '=');
+        map.put('{', '[');
+        map.put('}', ']');
+        map.put(':', ';');
+        map.put('"', '\'');
+        map.put('<', ',');
+        map.put('>', '.');
+        map.put('?', '/');
+        map.put('|', '\\');
+        return map;
+    }
+
+    public static void sendUnicodeBackspace(){
+        AWTInputBridge.sendKey(BACKSPACE_UNICODE, BACKSPACE_UNICODE);
+    }
+
+    public static void sendEncodedChar(int keyCode, char c) {
+        if (keyCode == BACKSPACE_ANDROID && !TouchCharInput.softKeyboardIsActive) {
+            sendUnicodeBackspace();
+        } else if (specialCharMap.containsKey(c)) {
+            AWTInputBridge.sendKey(specialCharMap.get(c), specialCharMap.get(c));
+        } else if (Character.isDigit(c)) {
+            AWTInputBridge.sendKey(c, c);
+        } else if (Character.isLowerCase(c)){
+            AWTInputBridge.sendKey(Character.toUpperCase(c),Character.toUpperCase(c));
+        } else if (Character.isUpperCase(c)) {
+            AWTInputBridge.sendKey(MODIFIER, MODIFIER);
+            AWTInputBridge.sendKey(c, c);
         } else {
-            AWTInputBridge.sendKey(iC,keyCode);
+            AWTInputBridge.sendKey(c, keyCode);
         }
     }
 }

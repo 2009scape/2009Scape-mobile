@@ -23,6 +23,7 @@ import net.kdt.pojavlaunch.utils.KeyEncoder;
  */
 public class TouchCharInput extends androidx.appcompat.widget.AppCompatEditText {
     public static final String TEXT_FILLER = "                              ";
+    public static boolean softKeyboardIsActive = false;
     public TouchCharInput(@NonNull Context context) {
         this(context, null);
     }
@@ -49,7 +50,7 @@ public class TouchCharInput extends androidx.appcompat.widget.AppCompatEditText 
         Log.i("TouchCharInput","New Event (before/after)!: "+ lengthBefore + " : " + lengthAfter);
         boolean isBackSpace = (lengthBefore > lengthAfter);
         if(isBackSpace) {
-            KeyEncoder.sendEncodedChar(KeyEncoder.backspaceUnicode,KeyEncoder.backspaceUnicode);
+            KeyEncoder.sendUnicodeBackspace();
             return;
         }
         char c = text.charAt(text.length()-1);
@@ -115,6 +116,7 @@ public class TouchCharInput extends androidx.appcompat.widget.AppCompatEditText 
 
     /** Regain ability to exist, take focus and have some text being input */
     public void enable(){
+        softKeyboardIsActive = true;
         setEnabled(true);
         setFocusable(true);
         setVisibility(VISIBLE);
@@ -123,6 +125,7 @@ public class TouchCharInput extends androidx.appcompat.widget.AppCompatEditText 
 
     /** Lose ability to exist, take focus and have some text being input */
     public void disable(){
+        softKeyboardIsActive = false;
         clear();
         setVisibility(GONE);
         clearFocus();
